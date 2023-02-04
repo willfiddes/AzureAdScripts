@@ -1,0 +1,13 @@
+<#
+.SYNOPSIS
+.DESCRIPTION
+
+.PARAMETER ClientId
+.PARAMETER ClientAssertion
+.PARAMETER TenantId
+.PARAMETER Resource
+
+.EXAMPLE
+
+.NOTES
+#>

@@ -1,3 +1,30 @@
+<#
+.SYNOPSIS
+.DESCRIPTION
+
+.PARAMETER ClientId
+.PARAMETER TenantId
+.PARAMETER CertificatePath
+.PARAMETER CertificatePassword
+
+.EXAMPLE
+
+.NOTES
+# Config.json:
+@'
+{
+  "ClientId": "YOUR_CLIENT_ID"
+  "CertificatePath": "PATH_TO_PFX"
+  "CertificatePassword": "YOUR_CERT_PASSWORD"
+  "TenantId": "YOUR_TENANT_ID"
+}
+'@ | out-file "config.json"
+
+$settings = (Get-Content -path config.json) | ConvertFrom-Json
+
+New-AadClientAssertion -ClientId $settings.ClientId -CertificatePath $settings.CertificatePath -CertificatePassword $settings.CertificatePassword -TenantId $settings.TenantId
+#>
+
 function New-AadClientAssertion
 {
     [CmdletBinding(DefaultParameterSetName='Default')]
@@ -32,7 +59,7 @@ function New-AadClientAssertion
     $nbf = [int][double]::parse((Get-Date -Date $(Get-Date).ToUniversalTime() -UFormat %s))
     $exp = [int][double]::parse((Get-Date -Date $((Get-Date).addseconds($ValidforSeconds).ToUniversalTime()) -UFormat %s)) # Grab Unix Epoch Timestamp and add desired expiration.
     $jti = New-Guid
-    $aud = "https://login.microsoftonline.com/$Tenant/oauth2/token"
+    $aud = "https://login.microsoftonline.com/$TenantId/oauth2/token"
     $sub = $ClientId
     $iss = $ClientId
    
@@ -50,7 +77,7 @@ function New-AadClientAssertion
         jti = $jti; 
         nbf = $nbf; 
         exp = $exp; 
-        tid = $Tenant;
+        tid = $TenantId;
     }
 
     $headerjson = $header | ConvertTo-Json -Compress

@@ -1,3 +1,31 @@
+<#
+.SYNOPSIS
+.DESCRIPTION
+
+.PARAMETER ClientId
+.PARAMETER ClientAssertion
+.PARAMETER TenantId
+.PARAMETER Resource
+
+.EXAMPLE
+
+.NOTES
+# Config.json:
+@'
+{
+  "ClientId": "YOUR_CLIENT_ID"
+  "CertificatePath": "PATH_TO_PFX"
+  "CertificatePassword": "YOUR_CERT_PASSWORD"
+  "TenantId": "YOUR_TENANT_ID"
+}
+'@ | out-file "config.json"
+
+$settings = (Get-Content -path config.json) | ConvertFrom-Json
+
+$Assertion = New-AadClientAssertion -ClientId $settings.ClientId -CertificatePath $settings.CertificatePath -CertificatePassword $settings.CertificatePassword -TenantId $settings.TenantId
+Get-AadTokenUsingClientAssertion -ClientAssertion $Assertion -ClientId $settings.ClientId -TenantId $settings.TenantId -Resource "https://graph.microsoft.com"
+#>
+
 Function Get-AadTokenUsingClientAssertion {
 
     [CmdletBinding(DefaultParameterSetName='Default')]
@@ -16,16 +44,8 @@ Function Get-AadTokenUsingClientAssertion {
 
     )
 
-    if($Global:AadToken)
-    {
-        if((Get-Date) -lt $Global:AadToken.Expires)
-        {
-            return $Global:AadToken
-        }
-    }
- 
     # Construct URI
-    $uri = " https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token"
+    $uri = "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token"
  
     # Construct Body
     $body = @{
@@ -47,8 +67,6 @@ Function Get-AadTokenUsingClientAssertion {
         AccessToken = $tokenJsonResponse.access_token
         Expires = (Get-Date).AddSeconds($tokenJsonResponse.expires_in)
     }
-    
-    $Global:AadToken = $ReturnObject
  
 # Return the access token
     return $ReturnObject.AccessToken
