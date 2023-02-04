@@ -1,3 +1,6 @@
+# internal
+other/*
+
 # Certs
 *.cer
 *.pfx
